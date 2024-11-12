@@ -186,5 +186,26 @@ void            switchkvm(void);
 int             copyout(pde_t*, uint, void*, uint);
 void            clearpteu(pde_t *pgdir, char *uva);
 
+// Add custom function declarations here:
+
+// spawn.c
+int spawn(char *filename, int priority);  // Add declaration for spawn function
+
+// thread_create.c and thread_join.c
+int thread_create(void (*start_routine)(void*), void *arg);  // Declaration for thread_create
+int thread_join(int pid);                                    // Declaration for thread_join
+
+// shmem.c
+void* shm_open(int size);      // Declaration for shared memory open function
+char* shm_attach(int shmid);    // Declaration for shared memory attach function
+
+// signal.c (if implementing signals)
+int signal(int pid, int signum);  // Declaration for sending signal to process
+
+// mutex_lock.c and mutex_unlock.c
+void mutex_lock(void);            // Declaration for locking mechanism
+void mutex_unlock(void);          // Declaration for unlocking mechanism
+
+
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

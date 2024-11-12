@@ -1,5 +1,7 @@
-// This file contains definitions for the
-// x86 memory management unit (MMU).
+#ifndef MMU_H
+#define MMU_H
+
+// This file contains definitions for the x86 memory management unit (MMU).
 
 // Eflags register
 #define FL_IF           0x00000200      // Interrupt Enable
@@ -62,24 +64,11 @@ struct segdesc {
 #define STS_IG32    0xE     // 32-bit Interrupt Gate
 #define STS_TG32    0xF     // 32-bit Trap Gate
 
-// A virtual address 'la' has a three-part structure as follows:
-//
-// +--------10------+-------10-------+---------12----------+
-// | Page Directory |   Page Table   | Offset within Page  |
-// |      Index     |      Index     |                     |
-// +----------------+----------------+---------------------+
-//  \--- PDX(va) --/ \--- PTX(va) --/
-
-// page directory index
+// Virtual address structure
 #define PDX(va)         (((uint)(va) >> PDXSHIFT) & 0x3FF)
-
-// page table index
 #define PTX(va)         (((uint)(va) >> PTXSHIFT) & 0x3FF)
-
-// construct virtual address from indexes and offset
 #define PGADDR(d, t, o) ((uint)((d) << PDXSHIFT | (t) << PTXSHIFT | (o)))
 
-// Page directory and page table constants.
 #define NPDENTRIES      1024    // # directory entries per page directory
 #define NPTENTRIES      1024    // # PTEs per page table
 #define PGSIZE          4096    // bytes mapped by a page
@@ -90,13 +79,11 @@ struct segdesc {
 #define PGROUNDUP(sz)  (((sz)+PGSIZE-1) & ~(PGSIZE-1))
 #define PGROUNDDOWN(a) (((a)) & ~(PGSIZE-1))
 
-// Page table/directory entry flags.
 #define PTE_P           0x001   // Present
 #define PTE_W           0x002   // Writeable
 #define PTE_U           0x004   // User
 #define PTE_PS          0x080   // Page Size
 
-// Address in page table or page directory entry
 #define PTE_ADDR(pte)   ((uint)(pte) & ~0xFFF)
 #define PTE_FLAGS(pte)  ((uint)(pte) &  0xFFF)
 
@@ -105,9 +92,9 @@ typedef uint pte_t;
 
 // Task state segment format
 struct taskstate {
-  uint link;         // Old ts selector
-  uint esp0;         // Stack pointers and segment selectors
-  ushort ss0;        //   after an increase in privilege level
+  uint link;
+  uint esp0;
+  ushort ss0;
   ushort padding1;
   uint *esp1;
   ushort ss1;
@@ -115,10 +102,10 @@ struct taskstate {
   uint *esp2;
   ushort ss2;
   ushort padding3;
-  void *cr3;         // Page directory base
-  uint *eip;         // Saved state from last task switch
+  void *cr3;
+  uint *eip;
   uint eflags;
-  uint eax;          // More saved state (registers)
+  uint eax;
   uint ecx;
   uint edx;
   uint ebx;
@@ -126,7 +113,7 @@ struct taskstate {
   uint *ebp;
   uint esi;
   uint edi;
-  ushort es;         // Even more saved state (segment selectors)
+  ushort es;
   ushort padding4;
   ushort cs;
   ushort padding5;
@@ -140,31 +127,23 @@ struct taskstate {
   ushort padding9;
   ushort ldt;
   ushort padding10;
-  ushort t;          // Trap on task switch
-  ushort iomb;       // I/O map base address
+  ushort t;
+  ushort iomb;
 };
 
 // Gate descriptors for interrupts and traps
 struct gatedesc {
-  uint off_15_0 : 16;   // low 16 bits of offset in segment
-  uint cs : 16;         // code segment selector
-  uint args : 5;        // # args, 0 for interrupt/trap gates
-  uint rsv1 : 3;        // reserved(should be zero I guess)
-  uint type : 4;        // type(STS_{IG32,TG32})
-  uint s : 1;           // must be 0 (system)
-  uint dpl : 2;         // descriptor(meaning new) privilege level
-  uint p : 1;           // Present
-  uint off_31_16 : 16;  // high bits of offset in segment
+  uint off_15_0 : 16;
+  uint cs : 16;
+  uint args : 5;
+  uint rsv1 : 3;
+  uint type : 4;
+  uint s : 1;
+  uint dpl : 2;
+  uint p : 1;
+  uint off_31_16 : 16;
 };
 
-// Set up a normal interrupt/trap gate descriptor.
-// - istrap: 1 for a trap (= exception) gate, 0 for an interrupt gate.
-//   interrupt gate clears FL_IF, trap gate leaves FL_IF alone
-// - sel: Code segment selector for interrupt/trap handler
-// - off: Offset in code segment for interrupt/trap handler
-// - dpl: Descriptor Privilege Level -
-//        the privilege level required for software to invoke
-//        this interrupt/trap gate explicitly using an int instruction.
 #define SETGATE(gate, istrap, sel, off, d)                \
 {                                                         \
   (gate).off_15_0 = (uint)(off) & 0xffff;                \
@@ -178,4 +157,5 @@ struct gatedesc {
   (gate).off_31_16 = (uint)(off) >> 16;                  \
 }
 
-#endif
+#endif // __ASSEMBLER__
+#endif // MMU_H

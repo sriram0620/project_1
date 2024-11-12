@@ -1,6 +1,12 @@
 // See MultiProcessor Specification Version 1.[14]
 
-struct mp {             // floating pointer
+#ifndef MP_H
+#define MP_H
+
+#include "types.h"
+
+// MP Floating Pointer Structure
+struct mp {
   uchar signature[4];           // "_MP_"
   void *physaddr;               // phys addr of MP config table
   uchar length;                 // 1
@@ -11,7 +17,8 @@ struct mp {             // floating pointer
   uchar reserved[3];
 };
 
-struct mpconf {         // configuration table header
+// MP Configuration Table Header
+struct mpconf {
   uchar signature[4];           // "PCMP"
   ushort length;                // total table length
   uchar version;                // [14]
@@ -26,10 +33,11 @@ struct mpconf {         // configuration table header
   uchar reserved;
 };
 
-struct mpproc {         // processor table entry
+// Processor Table Entry
+struct mpproc {
   uchar type;                   // entry type (0)
   uchar apicid;                 // local APIC id
-  uchar version;                // local APIC verison
+  uchar version;                // local APIC version
   uchar flags;                  // CPU flags
     #define MPBOOT 0x02           // This proc is the bootstrap processor.
   uchar signature[4];           // CPU signature
@@ -37,12 +45,13 @@ struct mpproc {         // processor table entry
   uchar reserved[8];
 };
 
-struct mpioapic {       // I/O APIC table entry
+// I/O APIC Table Entry
+struct mpioapic {
   uchar type;                   // entry type (2)
   uchar apicno;                 // I/O APIC id
   uchar version;                // I/O APIC version
   uchar flags;                  // I/O APIC flags
-  uint *addr;                  // I/O APIC address
+  uint *addr;                   // I/O APIC address
 };
 
 // Table entry types
@@ -52,5 +61,4 @@ struct mpioapic {       // I/O APIC table entry
 #define MPIOINTR  0x03  // One per bus interrupt source
 #define MPLINTR   0x04  // One per system interrupt source
 
-//PAGEBREAK!
-// Blank page.
+#endif  // MP_H
